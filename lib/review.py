@@ -38,13 +38,16 @@ class Review:
     @property
     def employee_id(self):
         return self._employee_id
-
+    
     @employee_id.setter
     def employee_id(self, value):
         if not isinstance(value, int):
             raise ValueError("Employee ID must be an integer")
-        # Here you might want to check if the employee ID exists in the database.
-        # This requires a database query which we'll skip for simplicity.
+        
+        # Here, add a check to see if the employee exists in the database.
+        if not Employee.find_by_id(value):
+            raise ValueError("Employee ID must reference an existing employee in the database")
+        
         self._employee_id = value
 
     def __repr__(self):
@@ -97,13 +100,16 @@ class Review:
    
     @classmethod
     def instance_from_db(cls, row):
-        id, year, summary, employee_id = row
-        if id in cls.all:
-            return cls.all[id]
-        else:
-            review = cls(year, summary, employee_id, id)
-            cls.all[id] = review
-            return review
+       id, year, summary, employee_id = row
+       if id in cls.all:
+           review = cls.all[id]
+           review.year = year  # Ensure correct year is always assigned
+           review.summary = summary  # Ensure correct summary is always assigned
+           review.employee_id = employee_id  # Ensure correct employee_id is always assigned
+       else:
+           review = cls(year, summary, employee_id, id)
+           cls.all[id] = review
+       return review
    
 
     @classmethod
